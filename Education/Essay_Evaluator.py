@@ -1,7 +1,9 @@
 import autogen
 from autogen import ConversableAgent, AssistantAgent, UserProxyAgent, GroupChat, GroupChatManager
+from autogen.agentchat.contrib.web_surfer import WebSurferAgent
 import datetime
 import os
+
 
 OPENAI_API_KEY = os.environ.get('OPEN_AI_API_KEY')
 # Configuration du modèle LLM
@@ -9,6 +11,8 @@ llm_config = {
     "config_list": [{"model": "gpt-4", "api_key": OPENAI_API_KEY}],
     "temperature": 0
 }
+
+
 
 # Création de l'agent assistant
 style_reviewer = AssistantAgent(
