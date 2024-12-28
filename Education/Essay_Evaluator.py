@@ -11,37 +11,29 @@ llm_config = {
 }
 
 # Création de l'agent assistant
-assistant = AssistantAgent(
-    name="assistant",
+style_reviewer = AssistantAgent(
+    name="style_reviewer",
     llm_config=llm_config,
-    system_message=f"""You are a helpful AI assistant that can write Python code to create plots and analyze stock data. 
-    If you encounter abug, think critically and step by step to resolve it, and re-submit your code.
-    Use polars instead of pandas. Adapt the column names so that they can be easily accessed"""
+    system_message=f"""You are a helpful AI assistant. Your task is to establish a rating for the style of the essay.
+    You will use 4 clear and distinct metrics to do so.
+    Provide your feedback in a clear and constructive manner."""
 )
 
 # Création de l'agent assistant pour la révision du code
-code_reviewer = AssistantAgent(
-    name="code_reviewer",
+grammar_reviewer = AssistantAgent(
+    name="grammar_reviewer",
     llm_config=llm_config,
-    system_message="""You are an expert Python code reviewer. Your task is to review the code written by the assistant, 
-    identify any issues or potential improvements, and suggest corrections. Focus on:
-    1. Correctness of the code
-    2. Efficiency and performance
-    3. Best practices and coding standards
-    4. Potential bugs or edge cases
+    system_message="""You are a helpful AI assistant. Your task is to establish a rating for the style of the essay. Focus on:
     Provide your feedback in a clear and constructive manner."""
 )
 
 # Création de l'agent générateur de graphiques
-graph_generator = AssistantAgent(
-    name="graph_generator",
+essay_rewriter = AssistantAgent(
+    name="essay_rewriter",
     llm_config=llm_config,
-    system_message="""You are a specialized AI assistant focused on generating graphs and visualizations. Your tasks include:
-    1. Creating two different graphs for a dashboard using Python and libraries like Matplotlib or Plotly.
-    2. Ensuring the graphs are visually appealing and informative.
-    3. Saving the graphs as image files.
-    4. Providing code to display these graphs in a simple dashboard layout.
-    Use polars for data manipulation if needed. Make sure to use dark mode for better visibility."""
+    system_message="""You are a helpful AI assistant. Your task is to provide suggestions of modification for parts of the essay that need to be re-written. 
+    You will give at least 2 propositions for improvement.
+    Provide your feedback in a clear and constructive manner."""
 )
 
 # Création de l'agent proxy utilisateur
@@ -58,12 +50,23 @@ user_proxy = UserProxyAgent(
 
 # Message initial
 today = datetime.datetime.now().date()
-message = f"""Today is {today}. Create a dashboard with two graphs:
-1. A correlation matrix between price movements for BTC and ETH.
-2. A line chart showing the price trends of BTC and ETH over the last month.
-Make sure the code is in markdown code blocks and save the figures to files.
-Use dark mode to display the data. Create a simple dashboard layout to display both graphs.
-Open the dashboard at the end of your code execution."""
+message = f"""Here is the essay I need you to analyze in order to give me possible improvement thereof. : 
+ Ah, the eternal culinary conundrum: the symphony of fiber and the robust rhythm of meat. Can these titans of the nutritional world truly coexist on the daily plate, 
+ or is it a gastronomic battle for dominance? Fear not, for we shall delve into this delicious debate, weaving a tapestry of flavors and facts.
+Fiber, that unsung hero of the digestive system, is the verdant embrace of vegetables, fruits, and whole grains. It dances through our intestines, 
+sweeping away the debris of modern diets – the insidious sugars, the lurking fats. Fiber, you see, is a veritable broom, keeping our internal machinery humming along smoothly. 
+It feeds the beneficial bacteria residing within our gut, a vibrant ecosystem crucial for overall well-being. Moreover, this fibrous friend helps us feel satiated, a delightful 
+side effect that can temper those pesky cravings and keep our waistlines in check.
+
+But what of meat, that cornerstone of many diets, that rich tapestry of flavor and texture? Meat, my dear reader, is a veritable powerhouse of protein, the building blocks of
+ our very being. It provides essential amino acids, the intricate puzzle pieces that our bodies use to construct and repair tissues, from the delicate muscles that allow us to
+   dance to the robust strength that allows us to carry heavy loads. Iron, that vital mineral for oxygen transport, abounds in meat, especially in its red varieties. And let us
+     not forget the symphony of vitamins and minerals that accompany this culinary delight, a veritable orchestra of nutrients playing a vital role in countless bodily functions.
+
+Now, the question arises: can these two titans, fiber and meat, truly coexist on the daily plate? The answer, my friends, is a resounding yes! A well-balanced diet, a culinary
+ masterpiece, embraces the diversity of the food kingdom. Imagine a vibrant salad, a verdant canvas adorned with the juicy bursts of berries, the crunchy texture of nuts, and
+ the lean embrace of grilled chicken or fish. This is the harmonious marriage of fiber and meat, a symphony of flavors that nourishes both body and soul. So, let us embrace the
+   bounty of the earth, let us savor the textures, the aromas, the sheer joy of a well-crafted meal, and let us nourish ourselves with the wisdom of culinary harmony."""
 
 # Initiation du chat
 #user_proxy.initiate_chat(
@@ -74,9 +77,12 @@ Open the dashboard at the end of your code execution."""
 
 # Création d'un GroupChat
 groupchat = GroupChat(
-    agents=[user_proxy, assistant],
+    agents=[user_proxy, 
+            style_reviewer,
+            grammar_reviewer,
+             essay_rewriter, ],
     messages=[],
-    max_round=7
+    max_round=12
 )
 
 # Création d'un manager pour le GroupChat
